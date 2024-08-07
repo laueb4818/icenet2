@@ -1,0 +1,19 @@
+## Must specify architecture for successful execution on cluster
+FROM --platform=amd64 condaforge/miniforge3:latest
+
+# create environment with pyhton 3,9
+RUN conda create -n icenet python=3.9
+
+## Set working directory in container
+WORKDIR /app
+
+## Activate environment automatically when opening bash shell
+RUN echo "conda activate icenet" > ~/.bashrc
+
+## Install icenet
+RUN conda install -c conda-forge eccodes -y
+RUN pip install icenet 
+RUN pip install "tensorflow[and-cuda]<2.16"
+
+## Open bash shell
+SHELL [ "/bin/bash", "-c"]

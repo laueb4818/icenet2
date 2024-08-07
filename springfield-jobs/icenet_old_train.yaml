@@ -1,0 +1,40 @@
+
+kind: Job
+apiVersion: batch/v1
+metadata:
+  name: gnn
+spec:
+  template:
+    spec:
+      hostIPC: true
+      containers:
+      - name: icenetgnn
+        image: "halyjo/icenetimage:madeonmac-v01"
+        workingDir: /storage/icenet2/
+        command: ["/bin/bash", "-c"]
+        args: ["pip install icenet --force-reinstall --no-cache-dir &&
+		printf 'Finished IceNet  Installation' && 
+		pip install 'tensorflow[and-cuda]<2.16' --force-reinstall --no-cache-dir && 
+		icenet_train tutorial_data tutorial_testrun-020820204-1522 42 -e 10"]
+        stdin: true
+        tty: true
+        env:
+        - name: WANDB_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: wandb
+              key: apikey
+        volumeMounts:
+        - name: storage
+          mountPath: /storage
+        # - name: .cdsapirc
+        #   mountPath: ~/.cdsapirc
+      volumes:
+      - name: storage
+        persistentVolumeClaim:
+          claimName: storage
+      # - name: .cdsapirc
+      #   persistentVolumeClaim:
+      #     claimName: .cdsapirc
+      restartPolicy: OnFailure
+  backoffLimit: 0
